@@ -5,87 +5,85 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
-# Show app title and description.
+# 페이지 설정: 제목, 아이콘, 레이아웃(화면 전체 너비 사용)
 st.set_page_config(
     page_title="Support tickets",
     page_icon="🎫",
-    layout="wide"   # 화면 전체 너비 사용
+    layout="wide"   # wide: 화면 전체 너비 사용
 )
 
+# 앱 제목 표시
 st.title("🎫 Support tickets")
 
+# 앱 소개 문구
 st.write(
     """
-    This app shows how you can build an internal tool in Streamlit. Here, we are 
-    implementing a support ticket workflow. The user can create a ticket, edit 
-    existing tickets, and view some statistics.
+    이 앱은 Streamlit으로 만든 내부 지원 티켓 관리 도구 예제입니다.
+    사용자는 티켓을 생성하고, 수정하며, 통계 정보를 확인할 수 있습니다.
     """
 )
 
+# --- 기존 티켓(샘플 데이터) 생성 ---
+if "df" not in st.session_state:  # 세션에 데이터프레임이 없을 경우만 실행
 
-# Create a random Pandas dataframe with existing tickets.
-if "df" not in st.session_state:
+    np.random.seed(42)  # 난수 고정 (재현성 확보)
 
-    # Set seed for reproducibility.
-    np.random.seed(42)
-
-    # Make up some fake issue descriptions.
+    # 가짜 이슈 설명(문제 내용) 목록
     issue_descriptions = [
-        "Network connectivity issues in the office",
-        "Software application crashing on startup",
-        "Printer not responding to print commands",
-        "Email server downtime",
-        "Data backup failure",
-        "Login authentication problems",
-        "Website performance degradation",
-        "Security vulnerability identified",
-        "Hardware malfunction in the server room",
-        "Employee unable to access shared files",
-        "Database connection failure",
-        "Mobile application not syncing data",
-        "VoIP phone system issues",
-        "VPN connection problems for remote employees",
-        "System updates causing compatibility issues",
-        "File server running out of storage space",
-        "Intrusion detection system alerts",
-        "Inventory management system errors",
-        "Customer data not loading in CRM",
-        "Collaboration tool not sending notifications",
+        "사무실 네트워크 연결 문제",
+        "소프트웨어 실행 시 충돌 발생",
+        "프린터 응답 없음",
+        "이메일 서버 다운",
+        "데이터 백업 실패",
+        "로그인 인증 문제",
+        "웹사이트 속도 저하",
+        "보안 취약점 발견",
+        "서버 하드웨어 오류",
+        "공유폴더 접근 불가",
+        "데이터베이스 연결 실패",
+        "모바일 앱 동기화 오류",
+        "VoIP 전화 시스템 문제",
+        "원격 근무자 VPN 접속 문제",
+        "시스템 업데이트 호환성 문제",
+        "파일 서버 저장공간 부족",
+        "침입 탐지 시스템 경고",
+        "재고관리 시스템 오류",
+        "CRM 고객 데이터 로딩 실패",
+        "협업툴 알림 전송 안 됨",
     ]
 
-    # Generate the dataframe with 100 rows/tickets.
+    # 100개의 가짜 티켓 데이터 생성
     data = {
-        "ID": [f"TICKET-{i}" for i in range(1100, 1000, -1)],
-        "Issue": np.random.choice(issue_descriptions, size=100),
-        "Status": np.random.choice(["Open", "In Progress", "Closed"], size=100),
-        "Priority": np.random.choice(["High", "Medium", "Low"], size=100),
+        "ID": [f"TICKET-{i}" for i in range(1100, 1000, -1)],  # 티켓 번호
+        "Issue": np.random.choice(issue_descriptions, size=100),  # 이슈 내용
+        "Status": np.random.choice(["Open", "In Progress", "Closed"], size=100),  # 상태
+        "Priority": np.random.choice(["High", "Medium", "Low"], size=100),  # 우선순위
         "Date Submitted": [
             datetime.date(2023, 6, 1) + datetime.timedelta(days=random.randint(0, 182))
             for _ in range(100)
-        ],
+        ],  # 제출일
     }
     df = pd.DataFrame(data)
 
-    # Save the dataframe in session state (a dictionary-like object that persists across
-    # page runs). This ensures our data is persisted when the app updates.
+    # 세션 상태(session_state)에 데이터 저장 (앱 재실행 시에도 유지됨)
     st.session_state.df = df
 
 
-# Show a section to add a new ticket.
-st.header("Add a ticket")
+# --- 새 티켓 추가 영역 ---
+st.header("Add a ticket")  # 섹션 제목
 
-# We're adding tickets via an `st.form` and some input widgets. If widgets are used
-# in a form, the app will only rerun once the submit button is pressed.
+# 폼(form) 내부에서 입력 위젯 구성
 with st.form("add_ticket_form"):
-    issue = st.text_area("Describe the issue")
-    priority = st.selectbox("Priority", ["High", "Medium", "Low"])
-    submitted = st.form_submit_button("Submit")
+    issue = st.text_area("Describe the issue")  # 문제 설명 입력
+    priority = st.selectbox("Priority", ["High", "Medium", "Low"])  # 우선순위 선택
+    submitted = st.form_submit_button("Submit")  # 제출 버튼
 
+# 폼 제출 시 실행
 if submitted:
-    # Make a dataframe for the new ticket and append it to the dataframe in session
-    # state.
+    # 새로운 티켓 데이터 생성 후 기존 데이터에 추가
     recent_ticket_number = int(max(st.session_state.df.ID).split("-")[1])
     today = datetime.datetime.now().strftime("%m-%d-%Y")
+
     df_new = pd.DataFrame(
         [
             {
@@ -98,66 +96,71 @@ if submitted:
         ]
     )
 
-    # Show a little success message.
+    # 제출 완료 메시지 + 새 티켓 미리보기
     st.write("Ticket submitted! Here are the ticket details:")
     st.dataframe(df_new, use_container_width=True, hide_index=True)
+
+    # 새 티켓을 기존 데이터프레임 위쪽에 추가
     st.session_state.df = pd.concat([df_new, st.session_state.df], axis=0)
 
-# Show section to view and edit existing tickets in a table.
+
+# --- 기존 티켓 목록 및 수정 영역 ---
 st.header("Existing tickets")
-st.write(f"Number of tickets: `{len(st.session_state.df)}`")
+st.write(f"Number of tickets: `{len(st.session_state.df)}`")  # 티켓 수 표시
 
 st.info(
-    "You can edit the tickets by double clicking on a cell. Note how the plots below "
-    "update automatically! You can also sort the table by clicking on the column headers.",
+    "표에서 셀을 더블클릭하면 내용을 직접 수정할 수 있습니다. "
+    "아래 그래프는 수정 내용에 따라 자동으로 갱신됩니다. "
+    "컬럼 제목을 클릭하면 정렬도 가능합니다.",
     icon="✍️",
 )
 
-# Show the tickets dataframe with `st.data_editor`. This lets the user edit the table
-# cells. The edited data is returned as a new dataframe.
+# 티켓 표 표시 (수정 가능)
 edited_df = st.data_editor(
     st.session_state.df,
     use_container_width=True,
     hide_index=True,
     column_config={
-        "Status": st.column_config.SelectboxColumn(
+        "Status": st.column_config.SelectboxColumn(  # 상태 선택 가능
             "Status",
             help="Ticket status",
             options=["Open", "In Progress", "Closed"],
             required=True,
         ),
-        "Priority": st.column_config.SelectboxColumn(
+        "Priority": st.column_config.SelectboxColumn(  # 우선순위 선택 가능
             "Priority",
             help="Priority",
             options=["High", "Medium", "Low"],
             required=True,
         ),
     },
-    # Disable editing the ID and Date Submitted columns.
-    disabled=["ID", "Date Submitted"],
+    disabled=["ID", "Date Submitted"],  # ID와 제출일은 수정 불가
 )
 
-# Show some metrics and charts about the ticket.
+
+# --- 통계 정보 표시 ---
 st.header("Statistics")
 
-# Show metrics side by side using `st.columns` and `st.metric`.
+# 3개의 지표를 가로로 나란히 표시
 col1, col2, col3 = st.columns(3)
 num_open_tickets = len(st.session_state.df[st.session_state.df.Status == "Open"])
 col1.metric(label="Number of open tickets", value=num_open_tickets, delta=10)
 col2.metric(label="First response time (hours)", value=5.2, delta=-1.5)
 col3.metric(label="Average resolution time (hours)", value=16, delta=2)
 
-# Show two Altair charts using `st.altair_chart`.
+
+# --- Altair 차트로 시각화 ---
 st.write("")
-st.write("##### Ticket status per month")
+st.write("##### Ticket status per month")  # 월별 상태별 티켓 수
+
 status_plot = (
     alt.Chart(edited_df)
     .mark_bar()
     .encode(
-        x="month(Date Submitted):O",
-        y="count():Q",
-        xOffset="Status:N",
-        color="Status:N",
+        x="month(Date Submitted):O",  # 제출월
+        y="count():Q",                # 티켓 수
+        xOffset="Status:N",           # 상태별로 분리
+        color="Status:N",             # 상태별 색상
     )
     .configure_legend(
         orient="bottom", titleFontSize=14, labelFontSize=14, titlePadding=5
@@ -165,11 +168,12 @@ status_plot = (
 )
 st.altair_chart(status_plot, use_container_width=True, theme="streamlit")
 
+# 우선순위별 비율(원형 차트)
 st.write("##### Current ticket priorities")
 priority_plot = (
     alt.Chart(edited_df)
     .mark_arc()
-    .encode(theta="count():Q", color="Priority:N")
+    .encode(theta="count():Q", color="Priority:N")  # 우선순위별 비율
     .properties(height=300)
     .configure_legend(
         orient="bottom", titleFontSize=14, labelFontSize=14, titlePadding=5
