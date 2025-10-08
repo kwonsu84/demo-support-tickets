@@ -59,7 +59,7 @@ if "df" not in st.session_state:  # 세션에 데이터프레임이 없을 경�
         "Status": np.random.choice(["Open", "In Progress", "Closed"], size=100),  # 상태
         "Priority": np.random.choice(["High", "Medium", "Low"], size=100),  # 우선순위
         "Date Submitted": [
-            datetime.date(2023, 6, 1) + datetime.timedelta(days=random.randint(0, 182))
+            datetime.date(2023, 6, 1) + datetime.timedelta(days=random.randint(0, 282))
             for _ in range(100)
         ],  # 제출일
     }
