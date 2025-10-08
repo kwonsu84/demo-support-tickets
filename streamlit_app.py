@@ -1,14 +1,19 @@
 import datetime
 import random
-
 import altair as alt
 import numpy as np
 import pandas as pd
 import streamlit as st
 
 # Show app title and description.
-st.set_page_config(page_title="Support tickets", page_icon="🎫")
+st.set_page_config(
+    page_title="Support tickets",
+    page_icon="🎫",
+    layout="wide"   # 화면 전체 너비 사용
+)
+
 st.title("🎫 Support tickets")
+
 st.write(
     """
     This app shows how you can build an internal tool in Streamlit. Here, we are 
@@ -16,6 +21,7 @@ st.write(
     existing tickets, and view some statistics.
     """
 )
+
 
 # Create a random Pandas dataframe with existing tickets.
 if "df" not in st.session_state:
